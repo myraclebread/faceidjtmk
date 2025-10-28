@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Administrator Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: #f4f4f4;
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+      }
+      .dashboard-card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        color: #333;
+        border-top: 5px solid #b22222;
+        position: relative;
+      }
+      h3,
+      h5 {
+        font-weight: 600;
+        color: #b22222;
+      }
+      table {
+        color: #333;
+      }
+      .table thead {
+        background: #f4f4f4;
+      }
+      .btn-custom {
+        background: #b22222;
+        border: none;
+        color: #fff;
+        transition: transform 0.2s ease-in-out;
+      }
+      .btn-custom:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(178, 34, 34, 0.4);
+      }
+      .btn-back {
+        background: #6c757d;
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+      }
+      .btn-back:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(108, 117, 125, 0.4);
+        background: #5a6268;
+        color: white;
+      }
+      .badge {
+        font-size: 0.85rem;
+        padding: 0.4em 0.6em;
+      }
+      .logo {
+        display: block;
+        margin: 0 auto 1rem auto;
+        max-width: 150px;
+      }
+      .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .select-all-cell {
+        width: 50px;
+      }
+      .header-content {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container py-5">
+      <div class="dashboard-card">
+        <!-- Back to Menu Button - Top Left -->
+        <a href="{{ url_for('menu') }}" class="btn btn-back">
+          <i class="bi bi-arrow-left"></i>
+          Back to Menu
+        </a>
+
+        <!-- Logo and Header -->
+        <div class="header-content">
+          <img
+            src="{{ url_for('static', filename='images/politeknik.png') }}"
+            alt="Logo"
+            class="logo"
+          />
+          <h3 class="mb-4">
+            <i class="bi bi-speedometer2 me-2"></i>Administrator Dashboard
+          </h3>
+        </div>
+
+        <!-- Students Section -->
+        <h5><i class="bi bi-people-fill me-2"></i>Students</h5>
+        <table class="table table-sm table-striped align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+            <tr>
+              <td><span class="badge bg-info">{{ s.student_id }}</span></td>
+              <td>{{ s.name }}</td>
+              <td>
+                <form
+                  method="POST"
+                  action="{{ url_for('delete_student', student_id=s.id) }}"
+                  style="display: inline"
+                  onsubmit="return confirm('Are you sure you want to delete student {{ s.name }}?')"
+                >
+                  <button class="btn btn-danger btn-sm btn-custom">
+                    <i class="bi bi-trash-fill"></i> Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Pending Enrollments -->
+        <h5 class="mt-4">
+          <i class="bi bi-hourglass-split me-2"></i>Pending Enrollments
+        </h5>
+
+        <!-- Form for bulk delete -->
+        <form
+          method="POST"
+          action="{{ url_for('delete_selected_tokens') }}"
+          id="bulkDeleteForm"
+          onsubmit="return validateSelection()"
+        >
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th class="select-all-cell">
+                  <input type="checkbox" id="selectAll" />
+                </th>
+                <th>Face</th>
+                <th>Token</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in pendings %}
+              <tr>
+                <td>
+                  <input type="checkbox" name="tokens" value="{{ p.token }}" class="token-checkbox" />
+                </td>
+                <td>
+                  {% if p.face_image %}
+                  <img
+                    src="{{ url_for('get_face_image', token=p.token) }}"
+                    class="img-thumbnail"
+                    style="width: 60px; height: 60px; object-fit: cover; cursor: pointer"
+                    alt="Face image"
+                    data-bs-toggle="modal"
+                    data-bs-target="#imageModal"
+                    data-token="{{ p.token }}"
+                  />
+                  {% else %}
+                  <span class="text-muted">No image</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge bg-warning text-dark">{{ p.token }}</span>
+                </td>
+                <td>
+                  <small>
+                    {{ p.created_at_display if p.created_at_display else p.created_at_utc }}
+                  </small>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          
+          <!-- Bulk Action Buttons -->
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-warning btn-sm btn-custom" type="submit">
+              <i class="bi bi-check2-circle"></i> Delete Selected
+            </button>
+            <button type="button" class="btn btn-danger btn-sm btn-custom" onclick="selectAllTokens()">
+              <i class="bi bi-check-all"></i> Select All
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="clearSelection()">
+              <i class="bi bi-x-circle"></i> Clear Selection
+            </button>
+          </div>
+          
+          {% if not pendings %}
+          <div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle"></i> No pending enrollments found.
+          </div>
+          {% endif %}
+        </form>
+
+        <!-- Enhanced Image Modal for larger view with zoom -->
+        <div class="modal fade" id="imageModal" tabindex="-1">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class="bi bi-person-bounding-box me-2"></i>Enrollment Face Image
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body text-center">
+                <div class="image-container" style="position: relative; display: inline-block">
+                  <img
+                    id="modalImage"
+                    src=""
+                    class="img-fluid modal-image"
+                    alt="Enrollment face"
+                    style="max-height: 70vh; cursor: zoom-in; border-radius: 8px"
+                  />
+                  <div class="image-controls mt-3">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="zoomIn()">
+                      <i class="bi bi-zoom-in"></i> Zoom In
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="zoomOut()">
+                      <i class="bi bi-zoom-out"></i> Zoom Out
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="resetZoom()">
+                      <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                    <span class="ms-2 text-muted" id="zoomLevel">100%</span>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <small class="text-muted">Click on the image to toggle zoom, or use the controls above</small>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attendance Logs -->
+<h5 class="mt-4">
+  <i class="bi bi-journal-check me-2"></i>Attendance Logs
+</h5>
+
+<!-- Filter and Sort Section -->
+<div class="filter-section mb-4 p-3 bg-light rounded border">
+  <h6 class="mb-3">
+    <i class="bi bi-funnel me-2"></i>Filter & Sort Attendance
+  </h6>
+  
+  <form method="GET" action="{{ url_for('admin_panel') }}" class="row g-3 align-items-end">
+    <!-- Date Range Filter -->
+    <div class="col-md-3">
+      <label for="date_from" class="form-label small fw-bold">From Date:</label>
+      <input type="date" id="date_from" name="date_from" class="form-control form-control-sm" 
+             value="{{ request.args.get('date_from', '') }}">
+    </div>
+    <div class="col-md-3">
+      <label for="date_to" class="form-label small fw-bold">To Date:</label>
+      <input type="date" id="date_to" name="date_to" class="form-control form-control-sm"
+             value="{{ request.args.get('date_to', '') }}">
+    </div>
+    
+    <!-- Student Filter -->
+    <div class="col-md-3">
+      <label for="student_filter" class="form-label small fw-bold">Student:</label>
+      <select id="student_filter" name="student_filter" class="form-select form-select-sm">
+        <option value="">All Students</option>
+        {% for student in students %}
+        <option value="{{ student.id }}" {% if request.args.get('student_filter')|string == student.id|string %}selected{% endif %}>
+          {{ student.name }} ({{ student.student_id }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <!-- Attendance Type Filter -->
+    <div class="col-md-3">
+      <label for="type_filter" class="form-label small fw-bold">Type:</label>
+      <select id="type_filter" name="type_filter" class="form-select form-select-sm">
+        <option value="">All Types</option>
+        <option value="check_in" {% if request.args.get('type_filter') == 'check_in' %}selected{% endif %}>Check In</option>
+        <option value="check_out" {% if request.args.get('type_filter') == 'check_out' %}selected{% endif %}>Check Out</option>
+      </select>
+    </div>
+    
+    <!-- Sort Options -->
+    <div class="col-md-4">
+      <label for="sort_by" class="form-label small fw-bold">Sort By:</label>
+      <select id="sort_by" name="sort_by" class="form-select form-select-sm">
+        <option value="created_at_utc" {% if request.args.get('sort_by', 'created_at_utc') == 'created_at_utc' %}selected{% endif %}>Date & Time</option>
+        <option value="student_name" {% if request.args.get('sort_by') == 'student_name' %}selected{% endif %}>Student Name</option>
+        <option value="student_id" {% if request.args.get('sort_by') == 'student_id' %}selected{% endif %}>Student ID</option>
+        <option value="type" {% if request.args.get('sort_by') == 'type' %}selected{% endif %}>Attendance Type</option>
+      </select>
+    </div>
+    
+    <!-- Sort Order -->
+    <div class="col-md-3">
+      <label for="sort_order" class="form-label small fw-bold">Order:</label>
+      <select id="sort_order" name="sort_order" class="form-select form-select-sm">
+        <option value="desc" {% if request.args.get('sort_order', 'desc') == 'desc' %}selected{% endif %}>Newest First</option>
+        <option value="asc" {% if request.args.get('sort_order') == 'asc' %}selected{% endif %}>Oldest First</option>
+      </select>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="col-md-5">
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-funnel"></i> Apply Filters
+        </button>
+        <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-clockwise"></i> Reset
+        </a>
+        <button type="submit" formaction="{{ url_for('export_excel') }}" class="btn btn-success btn-sm">
+          <i class="bi bi-file-earmark-excel"></i> Export Excel
+        </button>
+      </div>
+    </div>
+  </form>
+  
+  <!-- Active Filters Badge -->
+  {% if request.args %}
+  <div class="mt-3">
+    <small class="text-muted me-2">Active filters:</small>
+    {% if request.args.get('date_from') %}
+    <span class="badge bg-info">From: {{ request.args.get('date_from') }}</span>
+    {% endif %}
+    {% if request.args.get('date_to') %}
+    <span class="badge bg-info">To: {{ request.args.get('date_to') }}</span>
+    {% endif %}
+    {% if request.args.get('student_filter') %}
+    <span class="badge bg-info">Student: {{ students|selectattr('id', 'equalto', request.args.get('student_filter')|int)|map(attribute='name')|first }}</span>
+    {% endif %}
+    {% if request.args.get('type_filter') %}
+    <span class="badge bg-info">Type: {{ request.args.get('type_filter') }}</span>
+    {% endif %}
+    <span class="badge bg-secondary">Sort: {{ request.args.get('sort_by', 'created_at_utc') }} ({{ request.args.get('sort_order', 'desc') }})</span>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Attendance Table -->
+<div class="table-responsive">
+  <table class="table table-sm table-striped align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Student</th>
+        <th>Type</th>
+        <th>Date</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in attendance %}
+      <tr>
+        <td>
+          <div class="fw-bold">{{ a.student_name }}</div>
+          <span class="badge bg-info">{{ a.student_id }}</span>
+        </td>
+        <td>
+          {% if a.type == 'check_in' %}
+          <span class="badge bg-success">Check In</span>
+          {% elif a.type == 'check_out' %}
+          <span class="badge bg-primary">Check Out</span>
+          {% else %}
+          <span class="badge bg-secondary">{{ a.type }}</span>
+          {% endif %}
+        </td>
+        <td>
+          <small class="text-muted">{{ a.date_local if a.date_local else a.created_at_utc.strftime('%Y-%m-%d') }}</small>
+        </td>
+        <td>
+          <small>{{ a.time_local if a.time_local else a.created_at_utc.strftime('%H:%M:%S') }}</small>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4" class="text-center text-muted py-4">
+          <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+          No attendance records found matching your filters
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Results Count -->
+<div class="d-flex justify-content-between align-items-center mt-2">
+  <small class="text-muted">
+    Showing <strong>{{ attendance|length }}</strong> record(s)
+  </small>
+  {% if attendance|length >= 50 %}
+  <small class="text-warning">
+    <i class="bi bi-exclamation-triangle"></i> Showing latest 50 records. Use filters to find specific records.
+  </small>
+  {% endif %}
+</div>
+
+    <!-- Selection Management Script -->
+    <script>
+      // Select All functionality
+      document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.token-checkbox');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = this.checked;
+        });
+      });
+
+      function selectAllTokens() {
+        const checkboxes = document.querySelectorAll('.token-checkbox');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = true;
+        });
+        document.getElementById('selectAll').checked = true;
+      }
+
+      function clearSelection() {
+        const checkboxes = document.querySelectorAll('.token-checkbox');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = false;
+        });
+        document.getElementById('selectAll').checked = false;
+      }
+
+      function validateSelection() {
+        const checkboxes = document.querySelectorAll('.token-checkbox:checked');
+        if (checkboxes.length === 0) {
+          alert('Please select at least one token to delete.');
+          return false;
+        }
+        return confirm(`Are you sure you want to delete ${checkboxes.length} selected enrollment(s)?`);
+      }
+
+      // Update select all checkbox when individual checkboxes change
+      document.querySelectorAll('.token-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const allCheckboxes = document.querySelectorAll('.token-checkbox');
+          const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+          document.getElementById('selectAll').checked = allChecked;
+        });
+      });
+    </script>
+
+    <!-- Image Zoom Script -->
+    <script>
+      let currentZoom = 1;
+      const modalImage = document.getElementById('modalImage');
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const imageModal = document.getElementById("imageModal");
+
+        imageModal.addEventListener("show.bs.modal", function (event) {
+          const button = event.relatedTarget;
+          const token = button.getAttribute("data-token");
+          modalImage.src = "{{ url_for('get_face_image', token='') }}" + token;
+          resetZoom();
+        });
+
+        modalImage.addEventListener('click', function() {
+          if (currentZoom === 1) {
+            zoomIn();
+          } else {
+            resetZoom();
+          }
+        });
+      });
+
+      function zoomIn() {
+        if (currentZoom < 3) {
+          currentZoom += 0.25;
+          updateZoom();
+        }
+      }
+
+      function zoomOut() {
+        if (currentZoom > 0.5) {
+          currentZoom -= 0.25;
+          updateZoom();
+        }
+      }
+
+      function resetZoom() {
+        currentZoom = 1;
+        updateZoom();
+      }
+
+      function updateZoom() {
+        modalImage.style.transform = `scale(${currentZoom})`;
+        modalImage.style.transformOrigin = 'center center';
+        document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+        modalImage.style.cursor = currentZoom > 1 ? 'zoom-out' : 'zoom-in';
+      }
+    </script>
+
+    <!-- Countdown Inactivity Timer -->
+    <script>
+      let countdownTimer;
+      let warningTimer;
+      let countdownElement;
+
+      const createWarningModal = () => {
+        const modal = document.createElement("div");
+        modal.id = "inactivity-warning";
+        modal.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: white;
+          padding: 2rem;
+          border-radius: 10px;
+          box-shadow: 0 0 20px rgba(0,0,0,0.3);
+          z-index: 10000;
+          text-align: center;
+          border: 3px solid #b22222;
+        `;
+
+        modal.innerHTML = `
+          <h4 style="color: #b22222;">Session Timeout Warning</h4>
+          <p>You will be logged out due to inactivity in <span id="countdown">60</span> seconds.</p>
+          <button onclick="resetInactivityTimer()" class="btn btn-custom">Stay Logged In</button>
+        `;
+
+        document.body.appendChild(modal);
+        countdownElement = document.getElementById("countdown");
+      };
+
+      const resetInactivityTimer = () => {
+        clearTimeout(warningTimer);
+        clearTimeout(countdownTimer);
+        
+        const warningModal = document.getElementById("inactivity-warning");
+        if (warningModal) warningModal.remove();
+        
+        warningTimer = setTimeout(showWarning, 120000);
+        countdownTimer = setTimeout(logout, 180000);
+      };
+
+      const showWarning = () => {
+        createWarningModal();
+        let seconds = 60;
+        const countdown = setInterval(() => {
+          seconds--;
+          if (countdownElement) countdownElement.textContent = seconds;
+          if (seconds <= 0) {
+            clearInterval(countdown);
+            logout();
+          }
+        }, 1000);
+      };
+
+      const logout = () => {
+        window.location.href = "{{ url_for('logout') }}";
+      };
+
+      ["mousedown", "mousemove", "keypress", "scroll", "touchstart", "click"].forEach((event) => {
+        document.addEventListener(event, resetInactivityTimer, true);
+      });
+
+      document.addEventListener("DOMContentLoaded", resetInactivityTimer);
+    </script>
+  </body>
+</html>

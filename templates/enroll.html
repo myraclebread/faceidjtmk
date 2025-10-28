@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Enrollment | Politeknik</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ffeaea, #fff5f5); /* soft pastel pink-peach */
+    }
+
+    /* Bubble animation */
+    .bubbles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .bubbles span {
+      position: absolute;
+      display: block;
+      width: 20px;
+      height: 20px;
+      background: rgba(178, 34, 34, 0.25);
+      border-radius: 50%;
+      animation: rise 12s infinite ease-in;
+      bottom: -150px;
+    }
+
+    /* Lebihkan bubble + cepatkan animation */
+    .bubbles span:nth-child(1) { left: 5%; width: 40px; height: 40px; animation-delay: 0s; animation-duration: 10s; }
+    .bubbles span:nth-child(2) { left: 15%; width: 25px; height: 25px; animation-delay: 1s; animation-duration: 9s; }
+    .bubbles span:nth-child(3) { left: 25%; width: 30px; height: 30px; animation-delay: 2s; animation-duration: 11s; }
+    .bubbles span:nth-child(4) { left: 35%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 14s; }
+    .bubbles span:nth-child(5) { left: 45%; width: 35px; height: 35px; animation-delay: 1.5s; animation-duration: 8s; }
+    .bubbles span:nth-child(6) { left: 55%; width: 20px; height: 20px; animation-delay: 3s; animation-duration: 12s; }
+    .bubbles span:nth-child(7) { left: 65%; width: 50px; height: 50px; animation-delay: 2s; animation-duration: 10s; }
+    .bubbles span:nth-child(8) { left: 75%; width: 30px; height: 30px; animation-delay: 4s; animation-duration: 9s; }
+    .bubbles span:nth-child(9) { left: 85%; width: 40px; height: 40px; animation-delay: 1s; animation-duration: 13s; }
+    .bubbles span:nth-child(10) { left: 95%; width: 25px; height: 25px; animation-delay: 2.5s; animation-duration: 10s; }
+    .bubbles span:nth-child(11) { left: 12%; width: 15px; height: 15px; animation-delay: 3.5s; animation-duration: 8s; }
+    .bubbles span:nth-child(12) { left: 28%; width: 20px; height: 20px; animation-delay: 5s; animation-duration: 11s; }
+    .bubbles span:nth-child(13) { left: 48%; width: 45px; height: 45px; animation-delay: 6s; animation-duration: 12s; }
+    .bubbles span:nth-child(14) { left: 68%; width: 22px; height: 22px; animation-delay: 7s; animation-duration: 9s; }
+    .bubbles span:nth-child(15) { left: 88%; width: 30px; height: 30px; animation-delay: 8s; animation-duration: 10s; }
+
+    @keyframes rise {
+      0% { transform: translateY(0) scale(1); opacity: 0.4; }
+      50% { opacity: 0.9; }
+      100% { transform: translateY(-1000px) scale(1.3); opacity: 0; }
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: #fff;
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 420px;
+      border-top: 5px solid #b22222;
+    }
+
+    .card h4 {
+      font-weight: 600;
+      color: #b22222;
+    }
+
+    .btn-custom {
+      background: #b22222;
+      border: none;
+      transition: transform 0.2s ease-in-out;
+      color: #fff;
+    }
+    .btn-custom:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(178,34,34,0.4);
+    }
+
+    .logo {
+      display: block;
+      margin: 0 auto 1rem auto;
+      max-width: 120px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Bubbles background -->
+  <div class="bubbles">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- Enrollment Card -->
+  <div class="card">
+    <img src="{{ url_for('static', filename='images/politeknik.png') }}" alt="Logo" class="center">
+    <h4 class="text-center mb-4">Student Enrollment</h4>
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Mode</label>
+        <select class="form-select" name="mode" required>
+          <option value="signin">Manual Sign In</option>
+          <option value="enroll">Enroll & Sign In</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Student ID</label>
+        <input type="text" name="student_id" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Name (only if enrolling)</label>
+        <input type="text" name="name" class="form-control">
+      </div>
+      <button class="btn btn-custom w-100">Submit</button>
+    </form>
+  </div>
+</body>
+</html>

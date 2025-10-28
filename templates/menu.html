@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Admin Menu - Face Attendance System</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        background: url("{{ url_for('static', filename='images/poli2.jpg') }}")
+          no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding: 1rem;
+      }
+      .menu-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 600px;
+        color: #333;
+        border-top: 5px solid #b22222;
+        text-align: center;
+        backdrop-filter: blur(10px);
+      }
+      .menu-card h3 {
+        font-weight: 700;
+        color: #b22222;
+        margin-bottom: 2rem;
+      }
+      .btn-menu {
+        background: #b22222;
+        border: none;
+        color: white;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+      .btn-menu:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(178, 34, 34, 0.4);
+        background: #9a1b1b;
+        color: white;
+      }
+      .btn-dashboard {
+        background: #2c7873;
+      }
+      .btn-dashboard:hover {
+        background: #245c58;
+        box-shadow: 0 8px 20px rgba(44, 120, 115, 0.4);
+      }
+      .btn-attendance {
+        background: #b22222;
+      }
+      .btn-attendance:hover {
+        background: #9a1b1b;
+        box-shadow: 0 8px 20px rgba(178, 34, 34, 0.4);
+      }
+      .btn-logout {
+        background: #6c757d;
+        margin-top: 2rem;
+      }
+      .btn-logout:hover {
+        background: #5a6268;
+        box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
+      }
+      .logo-container {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .logo {
+        max-width: 180px;
+        height: auto;
+      }
+      .welcome-text {
+        color: #555;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+      }
+      .icon-large {
+        font-size: 1.5rem;
+      }
+      .spinner {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Mobile responsiveness */
+      @media (max-width: 768px) {
+        .menu-card {
+          margin: 1rem;
+          padding: 2rem 1.5rem;
+        }
+        .btn-menu {
+          padding: 1.2rem;
+          font-size: 1rem;
+        }
+        .logo {
+          max-width: 140px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-card">
+      <div class="logo-container">
+        <img
+          src="{{ url_for('static', filename='images/politeknik.png') }}"
+          alt="Logo"
+          class="logo"
+        />
+      </div>
+
+      <h3><i class="bi bi-speedometer2 me-2"></i>Admin Menu</h3>
+
+      <p class="welcome-text">
+        Welcome, <strong>{{ admin_name }}</strong>!<br />
+        Choose an option below:
+      </p>
+
+      <div class="d-grid gap-3">
+        <a
+          href="{{ url_for('admin_panel') }}"
+          class="btn btn-menu btn-dashboard"
+          id="dashboardBtn"
+        >
+          <i class="bi bi-grid-3x3-gap-fill icon-large"></i>
+          Dashboard Management
+        </a>
+
+        <a href="{{ url_for('attendance_page') }}" class="btn btn-menu btn-attendance" id="attendanceBtn">
+          <i class="bi bi-camera-fill icon-large"></i>
+          Face Attendance System
+        </a>
+
+        <a href="{{ url_for('logout') }}" class="btn btn-menu btn-logout" id="logoutBtn">
+          <i class="bi bi-box-arrow-right icon-large"></i>
+          Logout
+        </a>
+      </div>
+    </div>
+
+    <!-- Session Timeout Warning -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <div id="sessionToast" class="toast" role="alert">
+        <div class="toast-header">
+          <i class="bi bi-clock me-2"></i>
+          <strong class="me-auto">Session Warning</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+          Your session will expire in 2 minutes. Please save your work.
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Add loading states for buttons
+      document.addEventListener('DOMContentLoaded', function() {
+        const menuLinks = document.querySelectorAll('.btn-menu');
+        
+        menuLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Loading...';
+            
+            // Revert after 5 seconds if navigation fails
+            setTimeout(() => {
+              if (this.innerHTML.includes('Loading')) {
+                this.innerHTML = originalHTML;
+              }
+            }, 5000);
+          });
+        });
+
+        // Session timeout warning (3 minutes - show at 2 minutes)
+        setTimeout(() => {
+          const toast = new bootstrap.Toast(document.getElementById('sessionToast'));
+          toast.show();
+        }, 60000); // Show after 1 minute for testing (change to 120000 for 2 minutes)
+      });
+    </script>
+  </body>
+</html>
